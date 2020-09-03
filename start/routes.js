@@ -1,5 +1,7 @@
 'use strict'
 
+
+
 /*
 |--------------------------------------------------------------------------
 | Routes
@@ -24,27 +26,15 @@ Route.get('/', () => {
 Route.group(() => {
   
 //api routes start here
-  Route.get('/teachers' , 'TeacherController.index')
-  Route.get('/teachers/:id' , 'TeacherController.show')
-  Route.post('/teachers'  ,'TeacherController.store')
+Route.resource('/teachers' , 'TeacherController')
 
+Route.resource('/students' , 'StudentController')
 
-  Route.get('/students' , 'StudentController.index')
-  Route.get('/students/:id' , 'StudentController.show')
-  Route.post('/students'  ,'StudentController.store')
+Route.resource('/subjects' , 'SubjectController')
+Route.get('/subjects/:id/teacher' , 'SubjectController.showTeacher')
 
+Route.resource('/groups' , 'GroupController')
 
-  Route.get('/subjects' , 'SubjectController.index')
-  Route.get('/subjects/:id' , 'SubjectController.show')
-  Route.post('/subjects'  ,'SubjectController.store')
+Route.resource('/enrollments' , 'EnrollmentController')
 
-
-  Route.get('/groups' , 'GroupController.index')
-  Route.get('/groups/:id' , 'GroupController.show')
-  Route.post('/groups'  ,'GroupController.store')
-
-
-  Route.get('/enrollments' , 'EnrollmentController.index')
-  Route.get('/enrollment/:id' , 'EnrollmentController.show')
-  Route.post('/enrollments'  ,'EnrollmentController.store')
 }).prefix('api/v1')
