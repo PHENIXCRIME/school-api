@@ -1,7 +1,11 @@
 'use strict'
 
+const Subject = require("../../Models/Subject")
+
 const Database = use('Database')
 const Hash = use('Hash')
+const Validator = use('Validator')
+const Teacher = use('App/Models/Teacher')
 
 function numberTypeParamValidater(number) {
     if (Number.isNaN(parseInt(number) )) 
@@ -12,54 +16,63 @@ function numberTypeParamValidater(number) {
 }
 
 class TeacherController {
-    async index() { 
-        const teachers = await Database.table('teachers')
 
+    async index({ request }) {
+        const {references = undefined} = request.qs
+        const teachers = Teacher.query()
+        if(references) {
+            const extractedReferences =references.split(",")
+            teachers.with(extractedReferences)
+        }
         return {status:200 ,error:undefined,data:teachers} 
-
     }
 
     async show({request}){
         const{id} = request.params
-
-        const validatedValue =  numberTypeParamValidater(id)
+        const teacher = await teacher.find(id)
         
-        if (validatedValue.error) return {status : 500 ,error: validatedValue.error , data : undefined} 
-        const teacher = await Database
-        .select('*')
-        .from('teachers')
-        .where("teacher_id" , id)
-        .first()
-
-        return{ status :200 ,error:undefined,  data: teacher || {} }
-
-        // 0 ,"" , false , undefined , null 
-        // return teacher || 
-
-    }      
+        if (validatedValue.error)
+        return { status : 500, error: validatedValue.error, data: undefined };
+         
+        return { status : 200 ,error: undefined,  data: teachers || {} }
+    }
 
     async store({request}){
         const { first_name , last_name , email ,password} = request.body
+        
+        const teacher = await Teacher.create({first_name,last_name,email,password})
 
-        const missingKeys = []
-
-        if(!first_name) missingKey.push('first_name')
-        if(!last_name) missingKey.push('last_name')
-        if(!email) missingKey.push('email')
-        if(!password) missingKey.push('password')
-
-
-        if(missingKey.lenght)
-        return { status : 422 , error : `{missingKeys} is missing ` ,data : undefined}
-
-        const hashedPassword  = await Hash.make(password)
-        const teacher = 
-        await Database
-        .table('teachers')
-        .insert({first_name,last_name,email,password:hashedPassword })
-
-        return {status : 200 , error: undefined  , data : {first_name , last_name , email } }
+        return { status: 200, error: undefined, data: teacher }
     }
+
+    async update ({ request }) {
+        const{body ,params} = request 
+        const { id } = params
+        const {first_name , last_name , email } = body  
+        const teachers = await Database
+        .table('teachers')
+        .where({ teacher_id : id})
+        .update({first_name , last_name , email })
+
+        const teacher = await Database
+        .table('teachers')
+        .where({teacher_id : teacher_id}) 
+        .first()
+
+        return {status :200 , error : undefined , data :teachers }   
+    }
+
+    async destroy({request}) {
+        const {id} =request.params
+
+         await Database
+        .table('teachers')
+        .where({teacher_id : id})
+        .delete() 
+        
+        return {status : 200 , error : undefined , data : {message : 'success'}}
+    }
+
 }
 
 module.exports = TeacherController
