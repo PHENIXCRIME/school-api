@@ -32,6 +32,8 @@ class SubjectController {
     async show({request}){
         const{id} = request.params
         const subject = await Subject.find(id)
+        
+        const validatedValue = numberTypeParamValidator(id)
 
         if (validatedValue.error)
         return { status: 500, error: validatedValue.error, data: undefined };
@@ -41,8 +43,22 @@ class SubjectController {
 
     async store({request}){
         const { title , teacher_id } = request.body
+        const rules = {
+            title: 'required',
+            teacher_id: 'required',
+        }
+
+        const Validation = await Validator.validateAll(request.body, rules)
+
+        if (Validation.fails())
+            return { status: 422, error: Validation.message(), data: undefined }
+
+        const subject = new Subject()
+        subject.title = title
+        subject.teacher_id = teacher_id
+
+        await subject.save()
         
-        const subject = await Subject.create({title , teacher_id})
         return { status : 200 , error : undefined , data : subject }
     }
 
