@@ -28,6 +28,8 @@ class GroupController {
     async show({request}){
         const{id} = request.params
         const group = await group.find(id)
+        const ValidateValue = numberTypeParamValidator(id)
+
 
         if (validatedValue.error)
         return { status: 500, error: validatedValue.error, data: undefined };
@@ -38,8 +40,21 @@ class GroupController {
     async store({request}){
         const {name} = request.body
 
-        const group = await Group.create({name})
-        return {status : 200 , error: undefined  , data : group }
+        
+        const Validation = await Validator.validateAll(request.body, rules)
+
+        if (Validation.fails())
+            return { status: 422, error: Validation.message(), data: undefined }
+
+            const group = new Group();
+            group.name = name;
+        
+            await group.save();
+
+        return { status: 200, error: undefined, data: { name } }
+
+        // const group = await Group.create({name})
+        // return {status : 200 , error: undefined  , data : group }
     }
 
     async update ({ request }) {
