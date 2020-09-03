@@ -1,6 +1,10 @@
 'use strict'
 
+const Subject = require("../../Models/Subject");
+
 const Database = use('Database')
+const subject = use('App/Models/Subject')
+
 
 
 function numberTypeParamValidater(number) {
@@ -12,53 +16,64 @@ function numberTypeParamValidater(number) {
 }
 
 class SubjectController {
-    async index() { 
-        const subjects = await Database.table('subjects')
+    
+    async index({request}) { 
+        const { references = undefined } = request.qs
+        
+        const subjects = Subject.query() 
 
-        return {status:200 ,error:undefined,data:subjects} 
-
+        if(references ) {
+            const extractedReferences = references.split(",")
+            subjects.with(extractedReferences)
+        }
+        return { status:200 , error:undefined , data : await subjects.fetch() } 
     }
 
     async show({request}){
         const{id} = request.params
+        const subject = await Subject.find(id)
 
-        const validatedValue =  numberTypeParamValidater(id)
+        if (validatedValue.error)
+        return { status: 500, error: validatedValue.error, data: undefined };
         
-        if (validatedValue.error) return {status : 500 ,error: validatedValue.error , data : undefined} 
-        const subject = await Database
-        .select('*')
-        .from('subjects')
-        .where("subject_id" , id)
-        .first()
-
-        return{ status :200 ,error:undefined,  data: subjects || {} }
-
-        // 0 ,"" , false , undefined , null 
-        // return teacher || 
-
+        return{ status :200 ,error:undefined,  data: subject || {} }
     }      
 
     async store({request}){
         const { title , teacher_id } = request.body
-
-        const missingKeys = []
-
-        if(!title) missingKey.push('title  ')
-        if(!teacher_id) missingKey.push('teacher_id')
-
-
-
-        if(missingKey.lenght)
-        return { status : 422 , error : `{missingKeys} is missing ` ,data : undefined}
-
-
-        const subjects = 
-        await Database
-        .table('subjects')
-        .insert({title,teacher_id })
-
-        return {status : 200 , error: undefined  , data : {title     ,teacher_id } }
+        
+        const subject = await Subject.create({title , teacher_id})
+        return { status : 200 , error : undefined , data : subject }
     }
+
+    async update ({ request }) {
+        const{body ,params} = request 
+        const { id } = params
+        const { title , teacher_id } = body  
+        const subject = await Database
+        .table('subjects')
+        .where({ subject_id : id})
+        .update({title , teacher_id})
+
+        const subject = await Database
+        .table('subject')
+        .where({subject_id : subject_id}) 
+        .first()
+
+        return {status :200 , error : undefined , data : subjects }   
+    }
+
+    async destroy({request}) {
+        const {id} =request.params
+
+         await Database
+        .table('subjects')
+        .where({subject_id : id})
+        .delete() 
+        
+        return {status : 200 , error : undefined , data : {message : 'success'}}
+    }
+    
 }
 
 module.exports = SubjectController
