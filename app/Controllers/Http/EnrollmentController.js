@@ -35,9 +35,31 @@ class EnrollmentController {
     }      
 
     async store({request}){
+
         const { mark , mark_date ,student_id , subject_id} = request.body
+
+        const rules = {
+            mark: "required",
+            student_id: "required",
+            subject_id: "required",
+        }
+
+        // const enrollment = await Enrollment.find(id)
+
+        const Validation = await Validator.validateAll(request.body, rules)
+
+        if (Validation.fails())
+            return { status: 422, error: Validation.message(), data: undefined }
+
+            const enrollment = new Enrollment();
+            enrollment.mark = mark;
+            enrollment.student_id = student_id;
+            enrollment.subject_id = subject_id;
         
-        const enrollment = await Enrollment.find(id)
+            await enrollment.save();
+
+
+
         return {status : 200 , error: undefined  , data : enrollment }
     }
 
