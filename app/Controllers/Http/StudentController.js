@@ -39,9 +39,32 @@ class StudentController {
     async store({request}){
         const { first_name , last_name , email ,password} = request.body
        
-        const student = await Student.create({first_name , last_name , email ,password })
+        const rules = {
+            first_name: "required",
+            last_name: "required",
+            email: "required|email|unique:students,email",
+            password: "required|min:8",
+            group_id: "required",
+        };
 
-        return {status : 200 , error: undefined  , data : student }
+        const Validation = await Validator.validateAll(request.body, rules)
+
+        if (Validation.fails())
+            return { status: 422, error: Validation.message(), data: undefined }
+
+        const hashedPassword = await Hash.make(password)
+
+        const student = new Student()
+        student.first_name = first_name
+        student.last_name = last_name
+        student.email = email
+        student.password = hashedPassword
+        student.group_id = group_id
+
+        await student.save()
+
+        return { status: 200, error: undefined, data: student }
+        
     }
 
     async update ({ request }) {
