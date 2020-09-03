@@ -30,6 +30,8 @@ class TeacherController {
     async show({request}){
         const{id} = request.params
         const teacher = await teacher.find(id)
+        const ValidateValue = numberTypeParamValidator(id)
+
         
         if (validatedValue.error)
         return { status : 500, error: validatedValue.error, data: undefined };
@@ -40,7 +42,27 @@ class TeacherController {
     async store({request}){
         const { first_name , last_name , email ,password} = request.body
         
-        const teacher = await Teacher.create({first_name,last_name,email,password})
+        const rules = {
+            first_name: 'required',
+            last_name: 'required',
+            password: 'required|email|unique:teachers,email',
+            email: 'required|min:8'
+        }
+
+        const Validation = await Validator.validateAll(request.body, rules)
+
+        if (Validation.fails())
+            return { status: 422, error: Validation.message(), data: undefined }
+
+        const hashedPassword = await Hash.make(password)
+
+        const teacher = new Teacher()
+        teacher.first_name = first_name
+        teacher.last_name = last_name
+        teacher.email = email
+        teacher.password = hashedPassword
+    
+        await teacher.save()
 
         return { status: 200, error: undefined, data: teacher }
     }
