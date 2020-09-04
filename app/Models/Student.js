@@ -26,6 +26,10 @@ enrollment( ){
     return this.hasMany('App/Models/Enrollment')
 }
 
+subject() { 
+    return this.hasMany('App/Models/Subject')
+}
+
 }
 
 module.exports = Student
