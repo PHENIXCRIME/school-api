@@ -54,13 +54,13 @@ class TeacherController {
         if (Validation.fails())
             return { status: 422, error: Validation.message(), data: undefined }
 
-        const hashedPassword = await Hash.make(password)
+        
 
         const teacher = new Teacher()
         teacher.first_name = first_name
         teacher.last_name = last_name
         teacher.email = email
-        teacher.password = hashedPassword
+        
     
         await teacher.save()
 
